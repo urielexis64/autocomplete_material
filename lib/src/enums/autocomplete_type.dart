@@ -1,0 +1,1 @@
+enum AutocompleteType { searchAsync, searchSync }
