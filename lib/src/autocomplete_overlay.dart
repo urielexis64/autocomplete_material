@@ -17,67 +17,85 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   final Widget Function(BuildContext context, T item)? itemBuilder;
   final OverlayDecoration overlayDecoration;
   final dynamic Function(T item)? categorizedBy;
+  final bool Function(T item, String? query)? filter;
 
   AutocompleteOverlay({
     required this.layerLink,
     required this.renderBox,
     required this.items,
     required this.selectedItemsNotifier,
+    required this.textFieldNotifier,
     required this.textFieldFocusNode,
     required this.textFieldEditingController,
     required this.closeOnSelect,
     required this.onSelected,
     required this.overlayDecoration,
     this.categorizedBy,
+    this.filter,
     this.itemBuilder,
-  })  : textFieldNotifier = null,
-        onAsyncQuery = null,
+  })  : onAsyncQuery = null,
         super(builder: (context) {
           final size = renderBox.size;
+          final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+          final hasSpaceBelow = renderBox.localToGlobal(Offset.zero).dy +
+                  size.height +
+                  175 +
+                  keyboardHeight <
+              MediaQuery.of(context).size.height;
           return Positioned(
             width: size.width,
             child: CompositedTransformFollower(
               link: layerLink,
               showWhenUnlinked: false,
-              offset: Offset(0.0, size.height),
+              targetAnchor:
+                  hasSpaceBelow ? Alignment.bottomCenter : Alignment.topCenter,
+              followerAnchor:
+                  hasSpaceBelow ? Alignment.topCenter : Alignment.bottomCenter,
+              offset: Offset(0, hasSpaceBelow ? 0 : -10),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 175),
                 child: Material(
                   elevation: overlayDecoration.elevation,
                   borderRadius: overlayDecoration.borderRadius,
                   color: overlayDecoration.backgroundColor,
-                  child: ValueListenableBuilder(
-                      valueListenable: selectedItemsNotifier,
-                      builder: (context, selectedItems, child) {
-                        if (items.isEmpty) {
+                  child: ValueListenableBuilder<String?>(
+                      valueListenable: textFieldNotifier!,
+                      builder: (context, query, child) {
+                        final filteredItems = filter != null
+                            ? items.where((item) => filter.call(item, query))
+                            : items.where((element) =>
+                                element.toString().contains(query ?? ''));
+                        if (filteredItems.isEmpty) {
                           return overlayDecoration.emptyWidget;
                         }
-
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.zero,
-                          itemBuilder: (context, index) {
-                            final item = items[index];
-                            final isSelected = selectedItems.contains(item);
-                            return ListTile(
-                              key: ValueKey(item),
-                              title: itemBuilder != null
-                                  ? itemBuilder.call(context, item)
-                                  : Text(item.toString()),
-                              selected: isSelected,
-                              selectedColor:
-                                  Theme.of(context).colorScheme.onSurface,
-                              selectedTileColor: Colors.grey[300],
-                              onTap: () {
-                                onSelected.call(item, isSelected);
-                                if (closeOnSelect) {
-                                  textFieldFocusNode.unfocus();
-                                }
-                              },
-                            );
-                          },
-                          itemCount: items.length,
-                        );
+                        return ValueListenableBuilder(
+                            valueListenable: selectedItemsNotifier,
+                            builder: (context, selectedItems, child) {
+                              return ListView(
+                                shrinkWrap: true,
+                                padding: EdgeInsets.zero,
+                                children: filteredItems.map((item) {
+                                  final isSelected =
+                                      selectedItems.contains(item);
+                                  return ListTile(
+                                    key: ValueKey(item),
+                                    title: itemBuilder != null
+                                        ? itemBuilder.call(context, item)
+                                        : Text(item.toString()),
+                                    selected: isSelected,
+                                    selectedColor:
+                                        Theme.of(context).colorScheme.onSurface,
+                                    selectedTileColor: Colors.grey[300],
+                                    onTap: () {
+                                      onSelected.call(item, isSelected);
+                                      if (closeOnSelect) {
+                                        textFieldFocusNode.unfocus();
+                                      }
+                                    },
+                                  );
+                                }).toList(),
+                              );
+                            });
                       }),
                 ),
               ),
@@ -97,16 +115,27 @@ class AutocompleteOverlay<T> extends OverlayEntry {
     required this.onAsyncQuery,
     required this.overlayDecoration,
     this.categorizedBy,
+    this.filter,
     this.itemBuilder,
   })  : items = [],
         super(builder: (context) {
           final size = renderBox.size;
+          final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+          final hasSpaceBelow = renderBox.localToGlobal(Offset.zero).dy +
+                  size.height +
+                  175 +
+                  keyboardHeight <
+              MediaQuery.of(context).size.height;
           return Positioned(
             width: size.width,
             child: CompositedTransformFollower(
               link: layerLink,
               showWhenUnlinked: false,
-              offset: Offset(0.0, size.height + 5.0),
+              targetAnchor:
+                  hasSpaceBelow ? Alignment.bottomCenter : Alignment.topCenter,
+              followerAnchor:
+                  hasSpaceBelow ? Alignment.topCenter : Alignment.bottomCenter,
+              offset: Offset(0, hasSpaceBelow ? 0 : -10),
               child: ValueListenableBuilder<String?>(
                   valueListenable: textFieldNotifier!,
                   builder: (context, text, child) {
@@ -160,6 +189,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                       return Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
                                           if (overlayDecoration.headerWidget !=
                                               null)
@@ -177,6 +207,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                               return Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   ListTile(
                                                     title: Text(
@@ -250,6 +281,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                     return Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
                                         if (overlayDecoration.headerWidget !=
                                             null)

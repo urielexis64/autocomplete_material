@@ -39,17 +39,23 @@ class AutocompleteMaterialController<T> {
     this.widget = widget;
     this.setState = setState;
 
-    selectedItemsNotifier = ValueNotifier([]);
-    selectedItemNotifier = ValueNotifier(null);
+    selectedItemsNotifier = ValueNotifier(widget.initialItems ?? []);
+    selectedItemNotifier = ValueNotifier(widget.initialItem);
     _textNotifier = ValueNotifier(null);
+
+    final itemAsString = widget.initialItem != null
+        ? widget.itemToString?.call(widget.initialItem as T)
+        : null;
+
+    if (itemAsString != null) {
+      textEditingController.text = itemAsString;
+    }
 
     textEditingController.addListener(() {
       if (widget.debounceDuration != null) {
         checkDebounce();
       } else {
-        if (widget.type == AutocompleteType.searchAsync) {
-          _textNotifier.value = textEditingController.text;
-        }
+        _textNotifier.value = textEditingController.text;
       }
     });
   }
@@ -92,9 +98,7 @@ class AutocompleteMaterialController<T> {
     }
 
     _debounce = Timer(widget.debounceDuration!, () {
-      if (widget.type == AutocompleteType.searchAsync) {
-        _textNotifier.value = textEditingController.text;
-      }
+      _textNotifier.value = textEditingController.text;
     });
   }
 
@@ -166,7 +170,7 @@ class AutocompleteMaterialController<T> {
             children: [
               clearButton,
               IconButton(
-                onPressed: null,
+                onPressed: onTap,
                 icon: decoration.suffixIcon ?? Icon(defaultSuffixIcon),
               )
             ],
@@ -198,13 +202,20 @@ class AutocompleteMaterialController<T> {
           items: items,
           closeOnSelect: widget.closeOnSelect,
           selectedItemsNotifier: selectedItemsNotifier,
+          textFieldNotifier: _textNotifier,
           textFieldEditingController: textEditingController,
           textFieldFocusNode: textFieldFocusNode,
           itemBuilder: widget.itemBuilder,
           overlayDecoration: overlayDecoration,
           categorizedBy: widget.categorizedBy,
-          onSelected: (item, isSelected) =>
-              isSelected ? removeItem(item) : selectItem(item),
+          filter: widget.filter,
+          onSelected: (item, isSelected) {
+            isSelected ? removeItem(item) : selectItem(item);
+
+            if (widget.closeOnSelect) {
+              removeOverlay(clearTextField: widget.clearOnSelect);
+            }
+          },
         ),
       AutocompleteType.searchAsync => AutocompleteOverlay.searchAsync(
           renderBox: context.findRenderObject() as RenderBox,
@@ -215,8 +226,13 @@ class AutocompleteMaterialController<T> {
           textFieldEditingController: textEditingController,
           textFieldFocusNode: textFieldFocusNode,
           itemBuilder: widget.itemBuilder,
-          onSelected: (item, isSelected) =>
-              isSelected ? removeItem(item) : selectItem(item),
+          onSelected: (item, isSelected) {
+            isSelected ? removeItem(item) : selectItem(item);
+
+            if (widget.closeOnSelect) {
+              removeOverlay(clearTextField: widget.clearOnSelect);
+            }
+          },
           overlayDecoration: overlayDecoration,
           categorizedBy: widget.categorizedBy,
           onAsyncQuery: widget.onAsyncQuery,

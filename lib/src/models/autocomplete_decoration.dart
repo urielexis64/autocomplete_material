@@ -8,8 +8,9 @@ class AutocompleteDecoration extends InputDecoration {
     super.focusedBorder,
     super.focusedErrorBorder,
     super.disabledBorder,
-    super.labelText = 'Search',
-    super.hintText = 'Search',
+    super.label,
+    super.labelText,
+    super.hintText,
     super.helperText,
     super.errorText,
     super.counterText,
@@ -22,7 +23,6 @@ class AutocompleteDecoration extends InputDecoration {
     super.fillColor,
     super.hintTextDirection,
     super.enabled,
-    super.contentPadding =
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    super.contentPadding,
   });
 }

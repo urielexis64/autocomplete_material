@@ -16,7 +16,10 @@ class AutocompleteMaterialInputBase extends StatelessWidget {
   Widget build(BuildContext context) {
     return CompositedTransformTarget(
       link: layerLink,
-      child: InputDecorator(decoration: decoration, child: child),
+      child: InputDecorator(
+        decoration: decoration,
+        child: child,
+      ),
     );
   }
 }

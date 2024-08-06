@@ -17,8 +17,10 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   /// Creates a single selecte material autocomplete widget that searches synchronously
   /// for a list of items.
   const AutocompleteMaterial.single({
+    this.itemToString,
     this.validator,
     this.closeOnSelect = true,
+    this.clearOnSelect = true,
     this.items,
     this.itemBuilder,
     this.selectedItemBuilder,
@@ -26,11 +28,11 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.autovalidateMode,
     this.debounceDuration,
     this.overlayDecoration,
-    this.itemToString,
     this.onChanged,
     this.enabled = true,
     this.initialItem,
     this.categorizedBy,
+    this.filter,
     super.key,
   })  : initialItems = null,
         multipleValidator = null,
@@ -41,7 +43,8 @@ class AutocompleteMaterial<T> extends StatefulWidget {
 
   const AutocompleteMaterial.multiple({
     FormFieldValidator<List<T>>? validator,
-    this.closeOnSelect = true,
+    this.closeOnSelect = false,
+    this.clearOnSelect = true,
     this.items,
     this.itemBuilder,
     this.selectedItemBuilder,
@@ -54,6 +57,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.initialItems,
     this.categorizedBy,
     this.itemToString,
+    this.filter,
     super.key,
   })  : initialItem = null,
         multipleValidator = validator,
@@ -67,6 +71,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     required this.onAsyncQuery,
     this.validator,
     this.closeOnSelect = true,
+    this.clearOnSelect = true,
     this.itemBuilder,
     this.decoration,
     this.autovalidateMode,
@@ -77,6 +82,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.enabled = true,
     this.initialItem,
     this.categorizedBy,
+    this.filter,
     super.key,
   })  : initialItems = null,
         multipleValidator = null,
@@ -89,7 +95,8 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   const AutocompleteMaterial.multipleSearchAsync({
     required this.onAsyncQuery,
     FormFieldValidator<List<T>>? validator,
-    this.closeOnSelect = true,
+    this.closeOnSelect = false,
+    this.clearOnSelect = true,
     this.itemBuilder,
     this.selectedItemBuilder,
     this.decoration,
@@ -102,7 +109,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.categorizedBy,
     this.itemToString,
     super.key,
-  })  : assert(itemToString == null || selectedItemBuilder == null,
+  })  : assert(selectedItemBuilder == null,
             'itemToString and selectedItemBuilder cannot be used together'),
         initialItem = null,
         multipleValidator = validator,
@@ -110,6 +117,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
         items = null,
         isMultiSelect = true,
         onChanged = null,
+        filter = null,
         type = AutocompleteType.searchAsync;
 
   final AutocompleteDecoration? decoration;
@@ -117,6 +125,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   final List<T>? items;
   final Future<List<T>> Function(String? query)? onAsyncQuery;
   final bool closeOnSelect;
+  final bool clearOnSelect;
   final AutocompleteType type;
   final bool isMultiSelect;
   final Widget Function(BuildContext context, T item)? itemBuilder;
@@ -133,6 +142,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   final T? initialItem;
   final List<T>? initialItems;
   final dynamic Function(T item)? categorizedBy;
+  final bool Function(T item, String? query)? filter;
 
   @override
   State<AutocompleteMaterial<T>> createState() => AutocompleteMaterialState();
@@ -156,10 +166,10 @@ class AutocompleteMaterialState<T> extends State<AutocompleteMaterial<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: controller.onTap,
-      child: widget.isMultiSelect
-          ? AutocompleteFormField.multiple(
+    return widget.isMultiSelect
+        ? GestureDetector(
+            onTap: controller.onTap,
+            child: AutocompleteFormField.multiple(
               multipleValidator: widget.multipleValidator,
               autovalidateMode: widget.autovalidateMode,
               initialMultipleValue: widget.initialItems,
@@ -197,7 +207,6 @@ class AutocompleteMaterialState<T> extends State<AutocompleteMaterial<T>> {
                               textEditingController:
                                   controller.textEditingController,
                               textFieldFocusNode: controller.textFieldFocusNode,
-                              hintText: controller.decoration.hintText,
                             ),
                           ),
                         ],
@@ -206,23 +215,21 @@ class AutocompleteMaterialState<T> extends State<AutocompleteMaterial<T>> {
                   ),
                 );
               },
-            )
-          : AutocompleteFormField<T>.single(
-              singleValidator: widget.validator,
-              autovalidateMode: widget.autovalidateMode,
-              initialSingleValue: widget.initialItem,
-              singleSelectBuilder: (state) {
-                return AutocompleteMaterialInputBase(
-                  layerLink: controller.layerLink,
-                  decoration: controller.getDecoration(state),
-                  child: _InternalTextField(
-                    textEditingController: controller.textEditingController,
-                    textFieldFocusNode: controller.textFieldFocusNode,
-                    hintText: controller.decoration.hintText,
-                  ),
-                );
-              },
             ),
-    );
+          )
+        : AutocompleteFormField<T>.single(
+            singleValidator: widget.validator,
+            autovalidateMode: widget.autovalidateMode,
+            initialSingleValue: widget.initialItem,
+            singleSelectBuilder: (state) {
+              return _InternalTextField(
+                layerLink: controller.layerLink,
+                onTap: controller.onTap,
+                textEditingController: controller.textEditingController,
+                textFieldFocusNode: controller.textFieldFocusNode,
+                decoration: controller.getDecoration(state),
+              );
+            },
+          );
   }
 }
