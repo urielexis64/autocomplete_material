@@ -31,7 +31,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.onChanged,
     this.enabled = true,
     this.initialItem,
-    this.categorizedBy,
+    this.groupBy,
     this.filter,
     super.key,
   })  : initialItems = null,
@@ -55,7 +55,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.onItemsChanged,
     this.enabled = true,
     this.initialItems,
-    this.categorizedBy,
+    this.groupBy,
     this.itemToString,
     this.filter,
     super.key,
@@ -81,7 +81,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.onChanged,
     this.enabled = true,
     this.initialItem,
-    this.categorizedBy,
+    this.groupBy,
     this.filter,
     super.key,
   })  : initialItems = null,
@@ -106,7 +106,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.onItemsChanged,
     this.enabled = true,
     this.initialItems,
-    this.categorizedBy,
+    this.groupBy,
     this.itemToString,
     super.key,
   })  : assert(selectedItemBuilder == null,
@@ -135,13 +135,13 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   final String? Function(List<T>?)? multipleValidator;
   final AutovalidateMode? autovalidateMode;
   final Duration? debounceDuration;
-  final String? Function(T item)? itemToString;
+  final String Function(T item)? itemToString;
   final ValueChanged<List<T>>? onItemsChanged;
   final ValueChanged<T?>? onChanged;
   final bool enabled;
   final T? initialItem;
   final List<T>? initialItems;
-  final dynamic Function(T item)? categorizedBy;
+  final String Function(T item)? groupBy;
   final bool Function(T item, String? query)? filter;
 
   @override

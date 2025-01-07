@@ -207,8 +207,9 @@ class AutocompleteMaterialController<T> {
           textFieldFocusNode: textFieldFocusNode,
           itemBuilder: widget.itemBuilder,
           overlayDecoration: overlayDecoration,
-          categorizedBy: widget.categorizedBy,
+          groupBy: widget.groupBy,
           filter: widget.filter,
+          itemToString: widget.itemToString,
           onSelected: (item, isSelected) {
             isSelected ? removeItem(item) : selectItem(item);
 
@@ -226,6 +227,7 @@ class AutocompleteMaterialController<T> {
           textFieldEditingController: textEditingController,
           textFieldFocusNode: textFieldFocusNode,
           itemBuilder: widget.itemBuilder,
+          itemToString: widget.itemToString,
           onSelected: (item, isSelected) {
             isSelected ? removeItem(item) : selectItem(item);
 
@@ -234,7 +236,7 @@ class AutocompleteMaterialController<T> {
             }
           },
           overlayDecoration: overlayDecoration,
-          categorizedBy: widget.categorizedBy,
+          groupBy: widget.groupBy,
           onAsyncQuery: widget.onAsyncQuery,
         ),
     };

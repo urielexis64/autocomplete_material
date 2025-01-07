@@ -15,8 +15,9 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   final Function(T item, bool isSelected) onSelected;
   final Future<List<T>> Function(String? query)? onAsyncQuery;
   final Widget Function(BuildContext context, T item)? itemBuilder;
+  final String Function(T item)? itemToString;
   final OverlayDecoration overlayDecoration;
-  final dynamic Function(T item)? categorizedBy;
+  final String Function(T item)? groupBy;
   final bool Function(T item, String? query)? filter;
 
   AutocompleteOverlay({
@@ -30,9 +31,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
     required this.closeOnSelect,
     required this.onSelected,
     required this.overlayDecoration,
-    this.categorizedBy,
+    this.groupBy,
     this.filter,
     this.itemBuilder,
+    this.itemToString,
   })  : onAsyncQuery = null,
         super(builder: (context) {
           final size = renderBox.size;
@@ -81,7 +83,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                     key: ValueKey(item),
                                     title: itemBuilder != null
                                         ? itemBuilder.call(context, item)
-                                        : Text(item.toString()),
+                                        : Text(
+                                            itemToString?.call(item) ??
+                                                item.toString(),
+                                          ),
                                     selected: isSelected,
                                     selectedColor:
                                         Theme.of(context).colorScheme.onSurface,
@@ -114,9 +119,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
     required this.onSelected,
     required this.onAsyncQuery,
     required this.overlayDecoration,
-    this.categorizedBy,
+    this.groupBy,
     this.filter,
     this.itemBuilder,
+    this.itemToString,
   })  : items = [],
         super(builder: (context) {
           final size = renderBox.size;
@@ -169,20 +175,15 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                       return overlayDecoration.emptyWidget;
                                     }
 
-                                    if (categorizedBy != null) {
-                                      final categorizedItems =
-                                          <String, List<T>>{};
+                                    if (groupBy != null) {
+                                      final groupedItems = <String, List<T>>{};
                                       for (final item in items) {
-                                        final category =
-                                            categorizedBy.call(item);
-                                        if (category != null) {
-                                          if (categorizedItems
-                                              .containsKey(category)) {
-                                            categorizedItems[category]!
-                                                .add(item);
-                                          } else {
-                                            categorizedItems[category] = [item];
-                                          }
+                                        final group = groupBy.call(item);
+
+                                        if (groupedItems.containsKey(group)) {
+                                          groupedItems[group]!.add(item);
+                                        } else {
+                                          groupedItems[group] = [item];
                                         }
                                       }
 
@@ -199,11 +200,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                             shrinkWrap: true,
                                             padding: EdgeInsets.zero,
                                             itemBuilder: (context, index) {
-                                              final category = categorizedItems
-                                                  .keys
+                                              final group = groupedItems.keys
                                                   .toList()[index];
                                               final items =
-                                                  categorizedItems[category]!;
+                                                  groupedItems[group]!;
                                               return Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
@@ -211,7 +211,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                 children: [
                                                   ListTile(
                                                     title: Text(
-                                                      category,
+                                                      group,
                                                       style: const TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -236,8 +236,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                                 null
                                                             ? itemBuilder.call(
                                                                 context, item)
-                                                            : Text(item
-                                                                .toString()),
+                                                            : Text(itemToString
+                                                                    ?.call(
+                                                                        item) ??
+                                                                item.toString()),
                                                         selected: isSelected,
                                                         selectedColor:
                                                             Theme.of(context)
@@ -269,7 +271,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                             },
                                             separatorBuilder: (_, __) =>
                                                 overlayDecoration.dividerWidget,
-                                            itemCount: categorizedItems.length,
+                                            itemCount: groupedItems.length,
                                           )),
                                           if (overlayDecoration.footerWidget !=
                                               null)
@@ -300,7 +302,11 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                 title: itemBuilder != null
                                                     ? itemBuilder.call(
                                                         context, item)
-                                                    : Text(item.toString()),
+                                                    : Text(
+                                                        itemToString
+                                                                ?.call(item) ??
+                                                            item.toString(),
+                                                      ),
                                                 selected: isSelected,
                                                 selectedColor: Theme.of(context)
                                                     .colorScheme
