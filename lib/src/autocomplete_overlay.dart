@@ -10,7 +10,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   final ValueNotifier<List<T>> selectedItemsNotifier;
   final ValueNotifier<String?>? textFieldNotifier;
   final FocusNode textFieldFocusNode;
-  final TextEditingController textFieldEditingController;
+  final TextEditingController textController;
   final bool closeOnSelect;
   // ignore: avoid_positional_boolean_parameters
   final Function(T item, bool isSelected) onSelected;
@@ -25,6 +25,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   final OverlayDecoration overlayDecoration;
   final String Function(T item)? groupBy;
   final bool Function(T item, String? query)? filter;
+  final bool isMultiSelect;
 
   AutocompleteOverlay({
     required this.layerLink,
@@ -33,10 +34,11 @@ class AutocompleteOverlay<T> extends OverlayEntry {
     required this.selectedItemsNotifier,
     required this.textFieldNotifier,
     required this.textFieldFocusNode,
-    required this.textFieldEditingController,
+    required this.textController,
     required this.closeOnSelect,
     required this.onSelected,
     required this.overlayDecoration,
+    required this.isMultiSelect,
     this.groupBy,
     this.filter,
     this.itemBuilder,
@@ -44,6 +46,18 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   })  : onAsyncQuery = null,
         super(
           builder: (context) {
+            bool isItemSelected(T item) {
+              if (isMultiSelect) {
+                final selectedItems = selectedItemsNotifier.value;
+                return selectedItems.contains(item);
+              }
+
+              final itemAsString = itemToString?.call(item) ?? item.toString();
+              final text = textController.text;
+
+              return itemAsString == text;
+            }
+
             final size = renderBox.size;
             final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
             final hasSpaceBelow = renderBox.localToGlobal(Offset.zero).dy +
@@ -89,7 +103,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                               shrinkWrap: true,
                               padding: EdgeInsets.zero,
                               children: filteredItems.map((item) {
-                                final isSelected = selectedItems.contains(item);
+                                final isSelected = isItemSelected(item);
 
                                 void onTap() {
                                   onSelected.call(item, isSelected);
@@ -137,11 +151,12 @@ class AutocompleteOverlay<T> extends OverlayEntry {
     required this.selectedItemsNotifier,
     required this.textFieldNotifier,
     required this.textFieldFocusNode,
-    required this.textFieldEditingController,
+    required this.textController,
     required this.closeOnSelect,
     required this.onSelected,
     required this.onAsyncQuery,
     required this.overlayDecoration,
+    required this.isMultiSelect,
     this.groupBy,
     this.filter,
     this.itemBuilder,
@@ -149,6 +164,18 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   })  : items = [],
         super(
           builder: (context) {
+            bool isItemSelected(T item) {
+              if (isMultiSelect) {
+                final selectedItems = selectedItemsNotifier.value;
+                return selectedItems.contains(item);
+              }
+
+              final itemAsString = itemToString?.call(item) ?? item.toString();
+              final text = textController.text;
+
+              return itemAsString == text;
+            }
+
             final size = renderBox.size;
             final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
             final hasSpaceBelow = renderBox.localToGlobal(Offset.zero).dy +
@@ -256,8 +283,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                 itemBuilder: (context, index) {
                                                   final item = items[index];
                                                   final isSelected =
-                                                      selectedItems
-                                                          .contains(item);
+                                                      isItemSelected(item);
 
                                                   void onTap() {
                                                     onSelected.call(
@@ -329,7 +355,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                         itemBuilder: (context, index) {
                                           final item = items[index];
                                           final isSelected =
-                                              selectedItems.contains(item);
+                                              isItemSelected(item);
 
                                           void onTap() {
                                             onSelected.call(item, isSelected);

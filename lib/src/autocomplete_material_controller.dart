@@ -90,7 +90,7 @@ class AutocompleteMaterialController<T> {
       widget.onChanged?.call(null);
     }
     textEditingController.clear();
-    setState(() {});
+    //setState(() {});
     removeOverlay();
   }
 
@@ -207,13 +207,14 @@ class AutocompleteMaterialController<T> {
           closeOnSelect: widget.closeOnSelect,
           selectedItemsNotifier: selectedItemsNotifier,
           textFieldNotifier: _textNotifier,
-          textFieldEditingController: textEditingController,
+          textController: textEditingController,
           textFieldFocusNode: textFieldFocusNode,
           itemBuilder: widget.itemBuilder,
           overlayDecoration: overlayDecoration,
           groupBy: widget.groupBy,
           filter: widget.filter,
           itemToString: widget.itemToString,
+          isMultiSelect: widget.isMultiSelect,
           onSelected: (item, isSelected) {
             isSelected ? removeItem(item) : selectItem(item);
 
@@ -228,10 +229,11 @@ class AutocompleteMaterialController<T> {
           closeOnSelect: widget.closeOnSelect,
           selectedItemsNotifier: selectedItemsNotifier,
           textFieldNotifier: _textNotifier,
-          textFieldEditingController: textEditingController,
+          textController: textEditingController,
           textFieldFocusNode: textFieldFocusNode,
           itemBuilder: widget.itemBuilder,
           itemToString: widget.itemToString,
+          isMultiSelect: widget.isMultiSelect,
           onSelected: (item, isSelected) {
             isSelected ? removeItem(item) : selectItem(item);
 
@@ -259,7 +261,7 @@ class AutocompleteMaterialController<T> {
       singleDidChange?.call(item);
       removeOverlay(clearTextField: false);
     }
-    setState(() {});
+    //setState(() {});
   }
 
   void removeItem(T item) {
@@ -271,6 +273,6 @@ class AutocompleteMaterialController<T> {
     } else {
       singleDidChange?.call(item);
     }
-    setState(() {});
+    //setState(() {});
   }
 }
