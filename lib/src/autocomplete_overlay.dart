@@ -1,4 +1,5 @@
 import 'package:autocomplete_material/src/models/overlay_decoration.dart';
+import 'package:autocomplete_material/src/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 class AutocompleteOverlay<T> extends OverlayEntry {
@@ -41,7 +42,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
           final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
           final hasSpaceBelow = renderBox.localToGlobal(Offset.zero).dy +
                   size.height +
-                  175 +
+                  Constants.defaultOverlayMaxHeight +
                   keyboardHeight <
               MediaQuery.of(context).size.height;
           return Positioned(
@@ -55,7 +56,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                   hasSpaceBelow ? Alignment.topCenter : Alignment.bottomCenter,
               offset: Offset(0, hasSpaceBelow ? 0 : -10),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 175),
+                constraints: overlayDecoration.constraints ??
+                    const BoxConstraints(
+                      maxHeight: Constants.defaultOverlayMaxHeight,
+                    ),
                 child: Material(
                   elevation: overlayDecoration.elevation,
                   borderRadius: overlayDecoration.borderRadius,
@@ -129,7 +133,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
           final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
           final hasSpaceBelow = renderBox.localToGlobal(Offset.zero).dy +
                   size.height +
-                  175 +
+                  Constants.defaultOverlayMaxHeight +
                   keyboardHeight <
               MediaQuery.of(context).size.height;
           return Positioned(
@@ -146,7 +150,9 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                   valueListenable: textFieldNotifier!,
                   builder: (context, text, child) {
                     return ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 175),
+                      constraints: overlayDecoration.constraints ??
+                          const BoxConstraints(
+                              maxHeight: Constants.defaultOverlayMaxHeight),
                       child: Material(
                         elevation: overlayDecoration.elevation,
                         borderRadius: overlayDecoration.borderRadius,

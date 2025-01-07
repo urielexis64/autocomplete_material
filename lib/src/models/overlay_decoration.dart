@@ -10,9 +10,12 @@ class OverlayDecoration {
   final Color backgroundColor;
   final BorderRadius borderRadius;
   final double elevation;
+  final BoxConstraints? constraints;
 
   const OverlayDecoration({
-    this.loadingWidget = const Center(child: CircularProgressIndicator()),
+    this.loadingWidget = const Center(
+      child: CircularProgressIndicator.adaptive(),
+    ),
     this.emptyWidget = const Center(child: Text('No results found')),
     this.errorWidget = const Center(child: Text('Error')),
     this.headerWidget,
@@ -21,5 +24,6 @@ class OverlayDecoration {
     this.backgroundColor = Colors.white,
     this.borderRadius = const BorderRadius.all(Radius.circular(4)),
     this.elevation = 4,
+    this.constraints,
   });
 }
