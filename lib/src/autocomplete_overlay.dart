@@ -237,6 +237,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               ListTile(
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                ),
                                                 title: Text(
                                                   group,
                                                   style: const TextStyle(
