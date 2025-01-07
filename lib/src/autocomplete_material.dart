@@ -128,12 +128,12 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   final bool clearOnSelect;
   final AutocompleteType type;
   final bool isMultiSelect;
-  final Widget Function({
+  final Widget Function(
     BuildContext context,
     T item,
     VoidCallback onTap,
     bool isSelected,
-  })? itemBuilder;
+  )? itemBuilder;
   final Widget Function(BuildContext context, T item, VoidCallback onRemove)?
       selectedItemBuilder;
   final String? Function(T?)? validator;

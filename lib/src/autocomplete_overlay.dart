@@ -15,12 +15,12 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   // ignore: avoid_positional_boolean_parameters
   final Function(T item, bool isSelected) onSelected;
   final Future<List<T>> Function(String? query)? onAsyncQuery;
-  final Widget Function({
+  final Widget Function(
     BuildContext context,
     T item,
     VoidCallback onTap,
     bool isSelected,
-  })? itemBuilder;
+  )? itemBuilder;
   final String Function(T item)? itemToString;
   final OverlayDecoration overlayDecoration;
   final String Function(T item)? groupBy;
@@ -100,10 +100,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
 
                                 if (itemBuilder != null) {
                                   return itemBuilder(
-                                    context: context,
-                                    item: item,
-                                    isSelected: isSelected,
-                                    onTap: onTap,
+                                    context,
+                                    item,
+                                    onTap,
+                                    isSelected,
                                   );
                                 }
 
@@ -266,10 +266,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
 
                                                   if (itemBuilder != null) {
                                                     return itemBuilder(
-                                                      context: context,
-                                                      item: item,
-                                                      isSelected: isSelected,
-                                                      onTap: onTap,
+                                                      context,
+                                                      item,
+                                                      onTap,
+                                                      isSelected,
                                                     );
                                                   }
 
@@ -336,10 +336,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
 
                                           if (itemBuilder != null) {
                                             return itemBuilder(
-                                              context: context,
-                                              item: item,
-                                              isSelected: isSelected,
-                                              onTap: onTap,
+                                              context,
+                                              item,
+                                              onTap,
+                                              isSelected,
                                             );
                                           }
 
