@@ -12,7 +12,6 @@ class AutocompleteMaterialController<T> {
 
   late BuildContext context;
   late AutocompleteMaterial<T> widget;
-  late Function(VoidCallback) setState;
   Timer? _debounce;
 
   final layerLink = LayerLink();
@@ -35,11 +34,9 @@ class AutocompleteMaterialController<T> {
   void init(
     BuildContext context,
     AutocompleteMaterial<T> widget,
-    Function(VoidCallback) setState,
   ) {
     this.context = context;
     this.widget = widget;
-    this.setState = setState;
 
     selectedItemsNotifier = ValueNotifier(widget.initialItems ?? []);
     selectedItemNotifier = ValueNotifier(widget.initialItem);
@@ -90,7 +87,6 @@ class AutocompleteMaterialController<T> {
       widget.onChanged?.call(null);
     }
     textEditingController.clear();
-    //setState(() {});
     removeOverlay();
   }
 
@@ -121,8 +117,17 @@ class AutocompleteMaterialController<T> {
       _overlaybackdropEntry!.remove();
       _overlaybackdropEntry = null;
       textFieldFocusNode.unfocus();
-      if (clearTextField) {
+
+      if (widget.clearOnSelect && clearTextField) {
         textEditingController.clear();
+      }
+
+      if (!widget.isMultiSelect &&
+          selectedItemNotifier.value != null &&
+          textEditingController.text != selectedItemNotifier.value) {
+        textEditingController.text =
+            widget.itemToString?.call(selectedItemNotifier.value as T) ??
+                selectedItemNotifier.value.toString();
       }
     }
   }
@@ -219,7 +224,7 @@ class AutocompleteMaterialController<T> {
             isSelected ? removeItem(item) : selectItem(item);
 
             if (widget.closeOnSelect) {
-              removeOverlay(clearTextField: widget.clearOnSelect);
+              removeOverlay();
             }
           },
         ),
@@ -238,7 +243,7 @@ class AutocompleteMaterialController<T> {
             isSelected ? removeItem(item) : selectItem(item);
 
             if (widget.closeOnSelect) {
-              removeOverlay(clearTextField: widget.clearOnSelect);
+              removeOverlay();
             }
           },
           overlayDecoration: overlayDecoration,
@@ -261,7 +266,6 @@ class AutocompleteMaterialController<T> {
       singleDidChange?.call(item);
       removeOverlay(clearTextField: false);
     }
-    //setState(() {});
   }
 
   void removeItem(T item) {
@@ -273,6 +277,5 @@ class AutocompleteMaterialController<T> {
     } else {
       singleDidChange?.call(item);
     }
-    //setState(() {});
   }
 }

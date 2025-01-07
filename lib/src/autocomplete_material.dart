@@ -160,7 +160,7 @@ class AutocompleteMaterialState<T> extends State<AutocompleteMaterial<T>> {
   @override
   void initState() {
     super.initState();
-    controller.init(context, widget, setState);
+    controller.init(context, widget);
   }
 
   @override
