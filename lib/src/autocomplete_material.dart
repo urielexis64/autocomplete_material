@@ -1,7 +1,7 @@
 import 'package:autocomplete_material/src/autocomplete_material_controller.dart';
 import 'package:autocomplete_material/src/enums/autocomplete_type.dart';
-import 'package:autocomplete_material/src/models/autocomplete_decoration.dart';
 import 'package:autocomplete_material/src/models/overlay_decoration.dart';
+import 'package:autocomplete_material/src/utils/constants.dart';
 import 'package:autocomplete_material/src/widgets/autocomplete_form_field.dart';
 import 'package:autocomplete_material/src/widgets/autocomplete_material_input_base.dart';
 import 'package:flutter/material.dart';
@@ -17,18 +17,18 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   /// Creates a single selecte material autocomplete widget that searches synchronously
   /// for a list of items.
   const AutocompleteMaterial.single({
+    required this.items,
+    required this.onChanged,
     this.itemToString,
     this.validator,
     this.closeOnSelect = true,
     this.clearOnSelect = true,
-    this.items,
     this.itemBuilder,
     this.selectedItemBuilder,
     this.decoration,
     this.autovalidateMode,
     this.debounceDuration,
     this.overlayDecoration,
-    this.onChanged,
     this.enabled = true,
     this.initialItem,
     this.groupBy,
@@ -42,17 +42,17 @@ class AutocompleteMaterial<T> extends StatefulWidget {
         type = AutocompleteType.searchSync;
 
   const AutocompleteMaterial.multiple({
+    required this.items,
+    required this.onItemsChanged,
     FormFieldValidator<List<T>>? validator,
     this.closeOnSelect = false,
     this.clearOnSelect = true,
-    this.items,
     this.itemBuilder,
     this.selectedItemBuilder,
     this.decoration,
     this.autovalidateMode,
     this.debounceDuration,
     this.overlayDecoration,
-    this.onItemsChanged,
     this.enabled = true,
     this.initialItems,
     this.groupBy,
@@ -69,6 +69,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
 
   const AutocompleteMaterial.searchAsync({
     required this.onAsyncQuery,
+    required this.onChanged,
     this.validator,
     this.closeOnSelect = true,
     this.clearOnSelect = true,
@@ -78,7 +79,6 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.debounceDuration,
     this.overlayDecoration,
     this.itemToString,
-    this.onChanged,
     this.enabled = true,
     this.initialItem,
     this.groupBy,
@@ -94,6 +94,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
 
   const AutocompleteMaterial.multipleSearchAsync({
     required this.onAsyncQuery,
+    required this.onItemsChanged,
     FormFieldValidator<List<T>>? validator,
     this.closeOnSelect = false,
     this.clearOnSelect = true,
@@ -103,7 +104,6 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.autovalidateMode,
     this.debounceDuration,
     this.overlayDecoration,
-    this.onItemsChanged,
     this.enabled = true,
     this.initialItems,
     this.groupBy,
@@ -120,7 +120,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
         filter = null,
         type = AutocompleteType.searchAsync;
 
-  final AutocompleteDecoration? decoration;
+  final InputDecoration? decoration;
   final OverlayDecoration? overlayDecoration;
   final List<T>? items;
   final Future<List<T>> Function(String? query)? onAsyncQuery;
@@ -174,6 +174,7 @@ class AutocompleteMaterialState<T> extends State<AutocompleteMaterial<T>> {
               autovalidateMode: widget.autovalidateMode,
               initialMultipleValue: widget.initialItems,
               multipleSelectBuilder: (state) {
+                controller.multipleDidChange ??= state.didChange;
                 return AutocompleteMaterialInputBase(
                   layerLink: controller.layerLink,
                   decoration: controller.getDecoration(state),
@@ -182,7 +183,7 @@ class AutocompleteMaterialState<T> extends State<AutocompleteMaterial<T>> {
                     builder: (context, selectedItems, child) {
                       return Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 8,
+                        spacing: Constants.defaultSelectedItemsSpacing,
                         children: [
                           ...selectedItems.map(
                             (item) {
@@ -201,11 +202,17 @@ class AutocompleteMaterialState<T> extends State<AutocompleteMaterial<T>> {
                               );
                             },
                           ),
-                          IntrinsicWidth(
-                            stepWidth: 10.0,
+                          ConstrainedBox(
+                            constraints: const BoxConstraints.tightFor(
+                              width: Constants.internalTextFieldMaxWidth,
+                            ),
                             child: _InternalTextField(
                               textEditingController:
                                   controller.textEditingController,
+                              decoration: InputDecoration.collapsed(
+                                hintText: widget.decoration?.hintText ??
+                                    widget.decoration?.labelText,
+                              ),
                               textFieldFocusNode: controller.textFieldFocusNode,
                             ),
                           ),
@@ -222,6 +229,7 @@ class AutocompleteMaterialState<T> extends State<AutocompleteMaterial<T>> {
             autovalidateMode: widget.autovalidateMode,
             initialSingleValue: widget.initialItem,
             singleSelectBuilder: (state) {
+              controller.singleDidChange ??= state.didChange;
               return _InternalTextField(
                 layerLink: controller.layerLink,
                 onTap: controller.onTap,

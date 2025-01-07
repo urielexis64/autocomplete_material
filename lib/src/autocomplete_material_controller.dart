@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:autocomplete_material/src/autocomplete_material.dart';
 import 'package:autocomplete_material/src/autocomplete_overlay.dart';
 import 'package:autocomplete_material/src/enums/autocomplete_type.dart';
-import 'package:autocomplete_material/src/models/autocomplete_decoration.dart';
 import 'package:autocomplete_material/src/models/overlay_decoration.dart';
 import 'package:flutter/material.dart';
 
 class AutocompleteMaterialController<T> {
+  ValueChanged<List<T>?>? multipleDidChange;
+  ValueChanged<T?>? singleDidChange;
+
   late BuildContext context;
   late AutocompleteMaterial<T> widget;
   late Function(VoidCallback) setState;
@@ -26,8 +28,8 @@ class AutocompleteMaterialController<T> {
 
   late final List<T> items = widget.items ?? [];
 
-  AutocompleteDecoration get decoration =>
-      widget.decoration ?? const AutocompleteDecoration();
+  InputDecoration get decoration =>
+      widget.decoration ?? const InputDecoration();
   bool get isActiveOverlay => _overlayEntry != null;
 
   void init(
@@ -138,18 +140,19 @@ class AutocompleteMaterialController<T> {
       valueListenable: selectedItemNotifier,
       builder: (context, value1, _) {
         if (value1 == null && !widget.isMultiSelect) {
-          return const SizedBox();
+          return const SizedBox.shrink();
         }
         return ValueListenableBuilder(
           valueListenable: selectedItemsNotifier,
           builder: (context, value2, child) {
             if (value2.isEmpty && widget.isMultiSelect) {
-              return const SizedBox();
+              return const SizedBox.shrink();
             }
 
             return child!;
           },
           child: IconButton(
+            visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.clear),
             onPressed: clear,
           ),
@@ -171,6 +174,7 @@ class AutocompleteMaterialController<T> {
               clearButton,
               IconButton(
                 onPressed: onTap,
+                visualDensity: VisualDensity.compact,
                 icon: decoration.suffixIcon ?? Icon(defaultSuffixIcon),
               )
             ],
@@ -246,11 +250,13 @@ class AutocompleteMaterialController<T> {
     if (widget.isMultiSelect) {
       selectedItemsNotifier.value = [...selectedItemsNotifier.value, item];
       widget.onItemsChanged?.call(selectedItemsNotifier.value);
+      multipleDidChange?.call(selectedItemsNotifier.value);
     } else {
       textEditingController.text =
           widget.itemToString?.call(item) ?? item.toString();
       selectedItemNotifier.value = item;
       widget.onChanged?.call(item);
+      singleDidChange?.call(item);
       removeOverlay(clearTextField: false);
     }
     setState(() {});
@@ -261,6 +267,9 @@ class AutocompleteMaterialController<T> {
       ..remove(item);
     if (widget.isMultiSelect) {
       widget.onItemsChanged?.call(selectedItemsNotifier.value);
+      multipleDidChange?.call(selectedItemsNotifier.value);
+    } else {
+      singleDidChange?.call(item);
     }
     setState(() {});
   }
