@@ -6,7 +6,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   final LayerLink layerLink;
   final RenderBox renderBox;
 
-  final List<T> items;
+  final Future<List<T>> items;
   final ValueNotifier<List<T>> selectedItemsNotifier;
   final ValueNotifier<String?>? textFieldNotifier;
   final FocusNode textFieldFocusNode;
@@ -26,6 +26,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   final String Function(T item)? groupBy;
   final bool Function(T item, String? query)? filter;
   final bool isMultiSelect;
+  List<T> cachedItems = [];
 
   AutocompleteOverlay({
     required this.layerLink,
@@ -86,58 +87,83 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                     elevation: overlayDecoration.elevation,
                     borderRadius: overlayDecoration.borderRadius,
                     color: overlayDecoration.backgroundColor,
-                    child: ValueListenableBuilder<String?>(
-                      valueListenable: textFieldNotifier!,
-                      builder: (context, query, child) {
-                        final filteredItems = filter != null
-                            ? items.where((item) => filter.call(item, query))
-                            : items.where((element) =>
-                                element.toString().contains(query ?? ''));
-                        if (filteredItems.isEmpty) {
-                          return overlayDecoration.emptyWidget;
-                        }
-                        return ValueListenableBuilder(
-                          valueListenable: selectedItemsNotifier,
-                          builder: (context, selectedItems, child) {
-                            return ListView(
-                              shrinkWrap: true,
-                              padding: EdgeInsets.zero,
-                              children: filteredItems.map((item) {
-                                final isSelected = isItemSelected(item);
+                    child: FutureBuilder(
+                        future: items,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return overlayDecoration.loadingWidget;
+                          }
 
-                                void onTap() {
-                                  onSelected.call(item, isSelected);
-                                  if (closeOnSelect) {
-                                    textFieldFocusNode.unfocus();
-                                  }
-                                }
+                          if (snapshot.hasError) {
+                            return overlayDecoration.errorWidget;
+                          }
 
-                                if (itemBuilder != null) {
-                                  return itemBuilder(
-                                    context,
-                                    item,
-                                    onTap,
-                                    isSelected,
+                          final finalItems = snapshot.data as List<T>;
+
+                          return ValueListenableBuilder<String?>(
+                            valueListenable: textFieldNotifier!,
+                            builder: (context, query, child) {
+                              final filteredItems = filter != null
+                                  ? finalItems
+                                      .where((item) => filter.call(item, query))
+                                  : finalItems.where((element) {
+                                      final stringItem =
+                                          itemToString?.call(element) ??
+                                              element.toString();
+                                      query = (query ?? '').toLowerCase();
+                                      return stringItem
+                                          .toLowerCase()
+                                          .contains(query!);
+                                    });
+                              if (filteredItems.isEmpty) {
+                                return overlayDecoration.emptyWidget;
+                              }
+                              return ValueListenableBuilder(
+                                valueListenable: selectedItemsNotifier,
+                                builder: (context, selectedItems, child) {
+                                  return ListView(
+                                    shrinkWrap: true,
+                                    padding: EdgeInsets.zero,
+                                    children: filteredItems.map((item) {
+                                      final isSelected = isItemSelected(item);
+
+                                      void onTap() {
+                                        onSelected.call(item, isSelected);
+                                        if (closeOnSelect) {
+                                          textFieldFocusNode.unfocus();
+                                        }
+                                      }
+
+                                      if (itemBuilder != null) {
+                                        return itemBuilder(
+                                          context,
+                                          item,
+                                          onTap,
+                                          isSelected,
+                                        );
+                                      }
+
+                                      return ListTile(
+                                        key: ValueKey(item),
+                                        title: Text(
+                                          itemToString?.call(item) ??
+                                              item.toString(),
+                                        ),
+                                        selected: isSelected,
+                                        selectedColor: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                        selectedTileColor: Colors.grey[300],
+                                        onTap: onTap,
+                                      );
+                                    }).toList(),
                                   );
-                                }
-
-                                return ListTile(
-                                  key: ValueKey(item),
-                                  title: Text(
-                                    itemToString?.call(item) ?? item.toString(),
-                                  ),
-                                  selected: isSelected,
-                                  selectedColor:
-                                      Theme.of(context).colorScheme.onSurface,
-                                  selectedTileColor: Colors.grey[300],
-                                  onTap: onTap,
-                                );
-                              }).toList(),
-                            );
-                          },
-                        );
-                      },
-                    ),
+                                },
+                              );
+                            },
+                          );
+                        }),
                   ),
                 ),
               ),
@@ -161,7 +187,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
     this.filter,
     this.itemBuilder,
     this.itemToString,
-  })  : items = [],
+  })  : items = Future.value([]),
         super(
           builder: (context) {
             bool isItemSelected(T item) {

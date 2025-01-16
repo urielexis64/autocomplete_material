@@ -17,8 +17,9 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   /// Creates a single selecte material autocomplete widget that searches synchronously
   /// for a list of items.
   const AutocompleteMaterial.single({
-    required this.items,
     required this.onChanged,
+    this.items,
+    this.asyncItems,
     this.itemToString,
     this.validator,
     this.closeOnSelect = true,
@@ -39,11 +40,14 @@ class AutocompleteMaterial<T> extends StatefulWidget {
         onAsyncQuery = null,
         isMultiSelect = false,
         onItemsChanged = null,
-        type = AutocompleteType.searchSync;
+        type = AutocompleteType.searchSync,
+        assert(items == null || asyncItems == null,
+            'items and asyncItems cannot be used together');
 
   const AutocompleteMaterial.multiple({
-    required this.items,
     required this.onItemsChanged,
+    this.items,
+    this.asyncItems,
     FormFieldValidator<List<T>>? validator,
     this.closeOnSelect = false,
     this.clearOnSelect = false,
@@ -65,7 +69,9 @@ class AutocompleteMaterial<T> extends StatefulWidget {
         onAsyncQuery = null,
         isMultiSelect = true,
         onChanged = null,
-        type = AutocompleteType.searchSync;
+        type = AutocompleteType.searchSync,
+        assert(items == null || asyncItems == null,
+            'items and asyncItems cannot be used together');
 
   const AutocompleteMaterial.searchAsync({
     required this.onAsyncQuery,
@@ -87,6 +93,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   })  : initialItems = null,
         multipleValidator = null,
         items = null,
+        asyncItems = null,
         isMultiSelect = false,
         selectedItemBuilder = null,
         onItemsChanged = null,
@@ -115,6 +122,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
         multipleValidator = validator,
         validator = null,
         items = null,
+        asyncItems = null,
         isMultiSelect = true,
         onChanged = null,
         filter = null,
@@ -123,6 +131,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   final InputDecoration? decoration;
   final OverlayDecoration? overlayDecoration;
   final List<T>? items;
+  final Future<List<T>> Function()? asyncItems;
   final Future<List<T>> Function(String? query)? onAsyncQuery;
   final bool closeOnSelect;
   final bool clearOnSelect;

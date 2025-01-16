@@ -25,11 +25,19 @@ class AutocompleteMaterialController<T> {
   late ValueNotifier<List<T>> selectedItemsNotifier;
   late ValueNotifier<T?> selectedItemNotifier;
 
-  late final List<T> items = widget.items ?? [];
+  late Future<List<T>> items;
 
   InputDecoration get decoration =>
       widget.decoration ?? const InputDecoration();
   bool get isActiveOverlay => _overlayEntry != null;
+
+  void initItems() {
+    if (widget.asyncItems == null) {
+      items = Future.value(widget.items ?? []);
+    } else {
+      items = widget.asyncItems!();
+    }
+  }
 
   void init(
     BuildContext context,
@@ -37,6 +45,8 @@ class AutocompleteMaterialController<T> {
   ) {
     this.context = context;
     this.widget = widget;
+
+    initItems();
 
     selectedItemsNotifier = ValueNotifier(widget.initialItems ?? []);
     selectedItemNotifier = ValueNotifier(widget.initialItem);
