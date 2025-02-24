@@ -303,7 +303,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                 }
 
                                 if (groupBy != null) {
-                                  final groupedItems = <String?, List<T>>{};
+                                  final groupedItems = <String?, List>{};
                                   for (final item in items) {
                                     final group = groupBy.call(item);
 
