@@ -144,7 +144,11 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                         creatableOptions!.widgetBuilder
                                                 ?.call(query) ??
                                             ListTile(
-                                              title: Text('Add "$query!"'),
+                                              title: Text(
+                                                creatableOptions.titleBuilder
+                                                        ?.call(query!) ??
+                                                    'Add "$query"',
+                                              ),
                                               onTap: () {
                                                 final item = creatableOptions
                                                     .queryToObject(query!);
@@ -331,8 +335,12 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                 creatableOptions!.widgetBuilder
                                                         ?.call(text) ??
                                                     ListTile(
-                                                      title:
-                                                          Text('Add "$text"'),
+                                                      title: Text(
+                                                        creatableOptions
+                                                                .titleBuilder
+                                                                ?.call(text) ??
+                                                            'Add "$text"',
+                                                      ),
                                                       onTap: () {
                                                         final item =
                                                             creatableOptions
@@ -442,7 +450,11 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                       overlayDecoration.headerWidget!,
                                     if (hasCreatable)
                                       ListTile(
-                                        title: Text('Add "$text"'),
+                                        title: Text(
+                                          creatableOptions?.titleBuilder
+                                                  ?.call(text) ??
+                                              'Add "$text"',
+                                        ),
                                         onTap: () {
                                           final item = creatableOptions!
                                               .queryToObject(text);
