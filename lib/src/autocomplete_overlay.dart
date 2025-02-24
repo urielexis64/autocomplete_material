@@ -131,7 +131,8 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                           .contains(query!);
                                     });
 
-                              if (!finalItems.any((item) =>
+                              if (isCreatable &&
+                                  !finalItems.any((item) =>
                                       itemToString?.call(item) == query) &&
                                   query != null) {
                                 finalItems.add(
@@ -159,7 +160,8 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                         }
                                       }
 
-                                      if (item is TitleAndValue) {
+                                      if (isCreatable &&
+                                          item is TitleAndValue) {
                                         return ListTile(
                                           title: Text(item.title),
                                           onTap: onTap,
@@ -282,8 +284,9 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                             }
                             final items = snapshot.data as List;
 
-                            if (!items.any(
-                                (item) => itemToString?.call(item) == text)) {
+                            if (isCreatable &&
+                                !items.any((item) =>
+                                    itemToString?.call(item) == text)) {
                               items.add(
                                 TitleAndValue(
                                   value: text,
@@ -372,7 +375,8 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                     }
                                                   }
 
-                                                  if (item is TitleAndValue) {
+                                                  if (isCreatable &&
+                                                      item is TitleAndValue) {
                                                     return ListTile(
                                                       title: Text(item.title),
                                                       onTap: onTap,
