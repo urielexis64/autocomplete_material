@@ -444,7 +444,12 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                       ListTile(
                                         title: Text('Add "$text"'),
                                         onTap: () {
-                                          print(text);
+                                          final item = creatableOptions!
+                                              .queryToObject(text);
+                                          onSelected.call(item, false);
+                                          if (closeOnSelect) {
+                                            textFieldFocusNode.unfocus();
+                                          }
                                         },
                                       ),
                                     Flexible(
