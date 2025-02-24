@@ -2,16 +2,6 @@ import 'package:autocomplete_material/src/models/overlay_decoration.dart';
 import 'package:autocomplete_material/src/utils/constants.dart';
 import 'package:flutter/material.dart';
 
-class TitleAndValue {
-  const TitleAndValue({
-    required this.value,
-    String? title,
-  }) : this.title = title ?? value;
-
-  final String value;
-  final String title;
-}
-
 class AutocompleteOverlay<T> extends OverlayEntry {
   final LayerLink layerLink;
   final RenderBox renderBox;
@@ -24,7 +14,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   final bool closeOnSelect;
   // ignore: avoid_positional_boolean_parameters
   final Function(T item, bool isSelected) onSelected;
-  final Future<List> Function(String? query)? onAsyncQuery;
+  final Future<List<T>> Function(String? query)? onAsyncQuery;
   final Widget Function(
     BuildContext context,
     T item,
@@ -131,15 +121,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                           .contains(query!);
                                     });
 
-                              if (isCreatable &&
+                              final hasCreatable = isCreatable &&
                                   !finalItems.any((item) =>
                                       itemToString?.call(item) == query) &&
-                                  query != null) {
-                                finalItems.add(
-                                  TitleAndValue(
-                                      value: query!, title: 'Add $query'),
-                                );
-                              }
+                                  query != null;
 
                               if (filteredItems.isEmpty) {
                                 return overlayDecoration.emptyWidget;
@@ -150,47 +135,48 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                   return ListView(
                                     shrinkWrap: true,
                                     padding: EdgeInsets.zero,
-                                    children: filteredItems.map((item) {
-                                      final isSelected = isItemSelected(item);
+                                    children: [
+                                      if (hasCreatable)
+                                        ListTile(
+                                          title: Text('Add "$query!"'),
+                                          onTap: () {
+                                            print(query);
+                                          },
+                                        ),
+                                      ...filteredItems.map((item) {
+                                        final isSelected = isItemSelected(item);
 
-                                      void onTap() {
-                                        onSelected.call(item, isSelected);
-                                        if (closeOnSelect) {
-                                          textFieldFocusNode.unfocus();
+                                        void onTap() {
+                                          onSelected.call(item, isSelected);
+                                          if (closeOnSelect) {
+                                            textFieldFocusNode.unfocus();
+                                          }
                                         }
-                                      }
 
-                                      if (isCreatable &&
-                                          item is TitleAndValue) {
+                                        if (itemBuilder != null) {
+                                          return itemBuilder(
+                                            context,
+                                            item,
+                                            onTap,
+                                            isSelected,
+                                          );
+                                        }
+
                                         return ListTile(
-                                          title: Text(item.title),
+                                          key: ValueKey(item),
+                                          title: Text(
+                                            itemToString?.call(item) ??
+                                                item.toString(),
+                                          ),
+                                          selected: isSelected,
+                                          selectedColor: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          selectedTileColor: Colors.grey[300],
                                           onTap: onTap,
                                         );
-                                      }
-
-                                      if (itemBuilder != null) {
-                                        return itemBuilder(
-                                          context,
-                                          item,
-                                          onTap,
-                                          isSelected,
-                                        );
-                                      }
-
-                                      return ListTile(
-                                        key: ValueKey(item),
-                                        title: Text(
-                                          itemToString?.call(item) ??
-                                              item.toString(),
-                                        ),
-                                        selected: isSelected,
-                                        selectedColor: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                        selectedTileColor: Colors.grey[300],
-                                        onTap: onTap,
-                                      );
-                                    }).toList(),
+                                      }).toList(),
+                                    ],
                                   );
                                 },
                               );
@@ -284,16 +270,9 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                             }
                             final items = snapshot.data as List;
 
-                            if (isCreatable &&
-                                !items.any((item) =>
-                                    itemToString?.call(item) == text)) {
-                              items.add(
-                                TitleAndValue(
-                                  value: text,
-                                  title: 'Add $text',
-                                ),
-                              );
-                            }
+                            final hasCreatable = isCreatable &&
+                                !items.any(
+                                    (item) => itemToString?.call(item) == text);
 
                             return ValueListenableBuilder(
                               valueListenable: selectedItemsNotifier,
@@ -303,7 +282,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                 }
 
                                 if (groupBy != null) {
-                                  final groupedItems = <String?, List>{};
+                                  final groupedItems = <String?, List<T>>{};
                                   for (final item in items) {
                                     final group = groupBy.call(item);
 
@@ -335,6 +314,13 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                 CrossAxisAlignment.start,
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
+                                              if (hasCreatable)
+                                                ListTile(
+                                                  title: Text('Add "$text"'),
+                                                  onTap: () {
+                                                    print(text);
+                                                  },
+                                                ),
                                               if (groupByBuilder != null)
                                                 groupByBuilder.call(group),
                                               if (group != null &&
@@ -373,14 +359,6 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                       textFieldFocusNode
                                                           .unfocus();
                                                     }
-                                                  }
-
-                                                  if (isCreatable &&
-                                                      item is TitleAndValue) {
-                                                    return ListTile(
-                                                      title: Text(item.title),
-                                                      onTap: onTap,
-                                                    );
                                                   }
 
                                                   if (itemBuilder != null) {
