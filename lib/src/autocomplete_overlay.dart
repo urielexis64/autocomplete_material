@@ -415,6 +415,13 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                   children: [
                                     if (overlayDecoration.headerWidget != null)
                                       overlayDecoration.headerWidget!,
+                                    if (hasCreatable)
+                                      ListTile(
+                                        title: Text('Add "$text"'),
+                                        onTap: () {
+                                          print(text);
+                                        },
+                                      ),
                                     Flexible(
                                       child: ListView.separated(
                                         shrinkWrap: true,
