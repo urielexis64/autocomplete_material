@@ -144,11 +144,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                         creatableOptions!.widgetBuilder
                                                 ?.call(query) ??
                                             ListTile(
-                                              title: Text(
-                                                creatableOptions.titleBuilder
-                                                        ?.call(query!) ??
-                                                    'Add "$query"',
-                                              ),
+                                              title: Text('Add "$query"'),
                                               onTap: () {
                                                 final item = creatableOptions
                                                     .queryToObject(query!);
@@ -335,12 +331,8 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                 creatableOptions!.widgetBuilder
                                                         ?.call(text) ??
                                                     ListTile(
-                                                      title: Text(
-                                                        creatableOptions
-                                                                .titleBuilder
-                                                                ?.call(text) ??
-                                                            'Add "$text"',
-                                                      ),
+                                                      title:
+                                                          Text('Add "$text"'),
                                                       onTap: () {
                                                         final item =
                                                             creatableOptions
@@ -449,21 +441,19 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                     if (overlayDecoration.headerWidget != null)
                                       overlayDecoration.headerWidget!,
                                     if (hasCreatable)
-                                      ListTile(
-                                        title: Text(
-                                          creatableOptions?.titleBuilder
-                                                  ?.call(text) ??
-                                              'Add "$text"',
-                                        ),
-                                        onTap: () {
-                                          final item = creatableOptions!
-                                              .queryToObject(text);
-                                          onSelected.call(item, false);
-                                          if (closeOnSelect) {
-                                            textFieldFocusNode.unfocus();
-                                          }
-                                        },
-                                      ),
+                                      creatableOptions!.widgetBuilder
+                                              ?.call(text) ??
+                                          ListTile(
+                                            title: Text('Add "$text"'),
+                                            onTap: () {
+                                              final item = creatableOptions
+                                                  .queryToObject(text);
+                                              onSelected.call(item, false);
+                                              if (closeOnSelect) {
+                                                textFieldFocusNode.unfocus();
+                                              }
+                                            },
+                                          ),
                                     Flexible(
                                       child: ListView.separated(
                                         shrinkWrap: true,

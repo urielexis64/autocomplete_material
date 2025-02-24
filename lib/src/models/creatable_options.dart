@@ -11,18 +11,11 @@ class CreatableOptions<T> {
   /// The [queryToObject] function converts the query string into a new item of type [T].
   ///
   /// Optional [widgetBuilder] can be provided to customize the widget shown for creating new items.
-  /// Optional [titleBuilder] can be provided to customize the title text shown for creating new items.
   CreatableOptions({
     required this.isCreatable,
     required this.queryToObject,
     this.widgetBuilder,
-    this.titleBuilder,
   });
-
-  /// Function that builds the title text for the creatable item option.
-  ///
-  /// If not provided, defaults to 'Add "{query}"'.
-  final String Function(String query)? titleBuilder;
 
   /// Function that determines whether the current query can be used to create a new item.
   final bool Function(String query) isCreatable;
