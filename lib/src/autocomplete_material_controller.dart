@@ -238,7 +238,7 @@ class AutocompleteMaterialController<T> {
               removeOverlay();
             }
           },
-          isCreatable: widget.isCreatable,
+          creatableOptions: widget.creatableOptions,
         ),
       AutocompleteType.searchAsync => AutocompleteOverlay.searchAsync(
           renderBox: context.findRenderObject() as RenderBox,
@@ -262,7 +262,7 @@ class AutocompleteMaterialController<T> {
           groupBy: widget.groupBy,
           groupByBuilder: widget.groupByBuilder,
           onAsyncQuery: widget.onAsyncQuery,
-          isCreatable: widget.isCreatable,
+          creatableOptions: widget.creatableOptions,
         ),
     };
   }
