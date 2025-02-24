@@ -24,7 +24,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   final bool closeOnSelect;
   // ignore: avoid_positional_boolean_parameters
   final Function(T item, bool isSelected) onSelected;
-  final Future<List<T>> Function(String? query)? onAsyncQuery;
+  final Future<List> Function(String? query)? onAsyncQuery;
   final Widget Function(
     BuildContext context,
     T item,
