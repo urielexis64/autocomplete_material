@@ -141,19 +141,21 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                     padding: EdgeInsets.zero,
                                     children: [
                                       if (hasCreatable)
-                                        creatableOptions!.widgetBuilder
-                                                ?.call(query) ??
-                                            ListTile(
-                                              title: Text('Add "$query"'),
-                                              onTap: () {
-                                                final item = creatableOptions
-                                                    .queryToObject(query!);
-                                                onSelected.call(item, false);
-                                                if (closeOnSelect) {
-                                                  textFieldFocusNode.unfocus();
-                                                }
-                                              },
-                                            ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            final item = creatableOptions
+                                                .queryToObject(query!);
+                                            onSelected.call(item, false);
+                                            if (closeOnSelect) {
+                                              textFieldFocusNode.unfocus();
+                                            }
+                                          },
+                                          child: creatableOptions!.widgetBuilder
+                                                  ?.call(query) ??
+                                              ListTile(
+                                                title: Text('Add "$query"'),
+                                              ),
+                                        ),
                                       ...filteredItems.map((item) {
                                         final isSelected = isItemSelected(item);
 
@@ -328,24 +330,27 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               if (hasCreatable)
-                                                creatableOptions!.widgetBuilder
-                                                        ?.call(text) ??
-                                                    ListTile(
-                                                      title:
-                                                          Text('Add "$text"'),
-                                                      onTap: () {
-                                                        final item =
-                                                            creatableOptions
-                                                                .queryToObject(
-                                                                    text);
-                                                        onSelected.call(
-                                                            item, false);
-                                                        if (closeOnSelect) {
-                                                          textFieldFocusNode
-                                                              .unfocus();
-                                                        }
-                                                      },
-                                                    ),
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    final item =
+                                                        creatableOptions
+                                                            .queryToObject(
+                                                                text);
+                                                    onSelected.call(
+                                                        item, false);
+                                                    if (closeOnSelect) {
+                                                      textFieldFocusNode
+                                                          .unfocus();
+                                                    }
+                                                  },
+                                                  child: creatableOptions!
+                                                          .widgetBuilder
+                                                          ?.call(text) ??
+                                                      ListTile(
+                                                        title:
+                                                            Text('Add "$text"'),
+                                                      ),
+                                                ),
                                               if (groupByBuilder != null)
                                                 groupByBuilder.call(group),
                                               if (group != null &&
@@ -441,19 +446,21 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                     if (overlayDecoration.headerWidget != null)
                                       overlayDecoration.headerWidget!,
                                     if (hasCreatable)
-                                      creatableOptions!.widgetBuilder
-                                              ?.call(text) ??
-                                          ListTile(
-                                            title: Text('Add "$text"'),
-                                            onTap: () {
-                                              final item = creatableOptions
-                                                  .queryToObject(text);
-                                              onSelected.call(item, false);
-                                              if (closeOnSelect) {
-                                                textFieldFocusNode.unfocus();
-                                              }
-                                            },
-                                          ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          final item = creatableOptions
+                                              .queryToObject(text);
+                                          onSelected.call(item, false);
+                                          if (closeOnSelect) {
+                                            textFieldFocusNode.unfocus();
+                                          }
+                                        },
+                                        child: creatableOptions!.widgetBuilder
+                                                ?.call(text) ??
+                                            ListTile(
+                                              title: Text('Add "$text"'),
+                                            ),
+                                      ),
                                     Flexible(
                                       child: ListView.separated(
                                         shrinkWrap: true,
