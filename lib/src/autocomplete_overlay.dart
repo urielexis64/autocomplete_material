@@ -104,7 +104,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                             return overlayDecoration.errorWidget;
                           }
 
-                          final finalItems = snapshot.data as List;
+                          final finalItems = snapshot.data as List<T>;
 
                           return ValueListenableBuilder<String?>(
                             valueListenable: textFieldNotifier!,
@@ -278,13 +278,11 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                             if (snapshot.hasError) {
                               return overlayDecoration.errorWidget;
                             }
-                            final items = snapshot.data as List;
+                            final items = snapshot.data as List<T>;
 
-                            final hasCreatable = (creatableOptions?.isCreatable
-                                        .call(text) ??
-                                    false) &&
-                                !items.any(
-                                    (item) => itemToString?.call(item) == text);
+                            final hasCreatable =
+                                (creatableOptions?.isCreatable.call(text) ??
+                                    false);
 
                             return ValueListenableBuilder(
                               valueListenable: selectedItemsNotifier,
