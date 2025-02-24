@@ -129,9 +129,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                           itemToString?.call(item) == query) &&
                                       query != null;
 
-                              if (filteredItems.isEmpty) {
+                              if (filteredItems.isEmpty && !hasCreatable) {
                                 return overlayDecoration.emptyWidget;
                               }
+
                               return ValueListenableBuilder(
                                 valueListenable: selectedItemsNotifier,
                                 builder: (context, selectedItems, child) {
@@ -280,14 +281,16 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                             }
                             final items = snapshot.data as List<T>;
 
-                            final hasCreatable =
-                                (creatableOptions?.isCreatable.call(text) ??
-                                    false);
+                            final hasCreatable = (creatableOptions?.isCreatable
+                                        .call(text) ??
+                                    false) &&
+                                !items.any(
+                                    (item) => itemToString?.call(item) == text);
 
                             return ValueListenableBuilder(
                               valueListenable: selectedItemsNotifier,
                               builder: (context, selectedItems, child) {
-                                if (items.isEmpty) {
+                                if (items.isEmpty && !hasCreatable) {
                                   return overlayDecoration.emptyWidget;
                                 }
 
