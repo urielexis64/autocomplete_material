@@ -2,6 +2,16 @@ import 'package:autocomplete_material/src/models/overlay_decoration.dart';
 import 'package:autocomplete_material/src/utils/constants.dart';
 import 'package:flutter/material.dart';
 
+class TitleAndValue {
+  const TitleAndValue({
+    required this.value,
+    String? title,
+  }) : this.title = title ?? value;
+
+  final String value;
+  final String title;
+}
+
 class AutocompleteOverlay<T> extends OverlayEntry {
   final LayerLink layerLink;
   final RenderBox renderBox;
@@ -23,8 +33,10 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   )? itemBuilder;
   final String Function(T item)? itemToString;
   final OverlayDecoration overlayDecoration;
-  final String Function(T item)? groupBy;
+  final String? Function(T item)? groupBy;
+  final Widget Function(String? group)? groupByBuilder;
   final bool Function(T item, String? query)? filter;
+  final bool isCreatable;
   final bool isMultiSelect;
   List<T> cachedItems = [];
 
@@ -40,7 +52,9 @@ class AutocompleteOverlay<T> extends OverlayEntry {
     required this.onSelected,
     required this.overlayDecoration,
     required this.isMultiSelect,
+    required this.isCreatable,
     this.groupBy,
+    this.groupByBuilder,
     this.filter,
     this.itemBuilder,
     this.itemToString,
@@ -99,7 +113,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                             return overlayDecoration.errorWidget;
                           }
 
-                          final finalItems = snapshot.data as List<T>;
+                          final finalItems = snapshot.data as List;
 
                           return ValueListenableBuilder<String?>(
                             valueListenable: textFieldNotifier!,
@@ -116,6 +130,16 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                           .toLowerCase()
                                           .contains(query!);
                                     });
+
+                              if (!finalItems.any((item) =>
+                                      itemToString?.call(item) == query) &&
+                                  query != null) {
+                                finalItems.add(
+                                  TitleAndValue(
+                                      value: query!, title: 'Add $query'),
+                                );
+                              }
+
                               if (filteredItems.isEmpty) {
                                 return overlayDecoration.emptyWidget;
                               }
@@ -133,6 +157,13 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                         if (closeOnSelect) {
                                           textFieldFocusNode.unfocus();
                                         }
+                                      }
+
+                                      if (item is TitleAndValue) {
+                                        return ListTile(
+                                          title: Text(item.title),
+                                          onTap: onTap,
+                                        );
                                       }
 
                                       if (itemBuilder != null) {
@@ -183,7 +214,9 @@ class AutocompleteOverlay<T> extends OverlayEntry {
     required this.onAsyncQuery,
     required this.overlayDecoration,
     required this.isMultiSelect,
+    required this.isCreatable,
     this.groupBy,
+    this.groupByBuilder,
     this.filter,
     this.itemBuilder,
     this.itemToString,
@@ -247,7 +280,17 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                             if (snapshot.hasError) {
                               return overlayDecoration.errorWidget;
                             }
-                            final items = snapshot.data as List<T>;
+                            final items = snapshot.data as List;
+
+                            if (!items.any(
+                                (item) => itemToString?.call(item) == text)) {
+                              items.add(
+                                TitleAndValue(
+                                  value: text,
+                                  title: 'Add $text',
+                                ),
+                              );
+                            }
 
                             return ValueListenableBuilder(
                               valueListenable: selectedItemsNotifier,
@@ -257,7 +300,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                 }
 
                                 if (groupBy != null) {
-                                  final groupedItems = <String, List<T>>{};
+                                  final groupedItems = <String?, List<T>>{};
                                   for (final item in items) {
                                     final group = groupBy.call(item);
 
@@ -289,18 +332,27 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                 CrossAxisAlignment.start,
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              ListTile(
-                                                contentPadding:
-                                                    const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                ),
-                                                title: Text(
-                                                  group,
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
+                                              if (groupByBuilder != null)
+                                                groupByBuilder.call(group),
+                                              if (group != null &&
+                                                  groupByBuilder == null)
+                                                ListTile(
+                                                  contentPadding:
+                                                      const EdgeInsets
+                                                          .symmetric(
+                                                    horizontal: 8,
+                                                  ),
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                  dense: true,
+                                                  title: Text(
+                                                    group,
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
                                               ListView.separated(
                                                 physics:
                                                     const NeverScrollableScrollPhysics(),
@@ -318,6 +370,13 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                       textFieldFocusNode
                                                           .unfocus();
                                                     }
+                                                  }
+
+                                                  if (item is TitleAndValue) {
+                                                    return ListTile(
+                                                      title: Text(item.title),
+                                                      onTap: onTap,
+                                                    );
                                                   }
 
                                                   if (itemBuilder != null) {

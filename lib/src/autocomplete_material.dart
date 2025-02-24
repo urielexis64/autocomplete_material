@@ -33,7 +33,9 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.enabled = true,
     this.initialItem,
     this.groupBy,
+    this.groupByBuilder,
     this.filter,
+    this.isCreatable = false,
     super.key,
   })  : initialItems = null,
         multipleValidator = null,
@@ -60,8 +62,10 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.enabled = true,
     this.initialItems,
     this.groupBy,
+    this.groupByBuilder,
     this.itemToString,
     this.filter,
+    this.isCreatable = false,
     super.key,
   })  : initialItem = null,
         multipleValidator = validator,
@@ -88,7 +92,9 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.enabled = true,
     this.initialItem,
     this.groupBy,
+    this.groupByBuilder,
     this.filter,
+    this.isCreatable = false,
     super.key,
   })  : initialItems = null,
         multipleValidator = null,
@@ -114,7 +120,9 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.enabled = true,
     this.initialItems,
     this.groupBy,
+    this.groupByBuilder,
     this.itemToString,
+    this.isCreatable = false,
     super.key,
   })  : assert(selectedItemBuilder == null,
             'itemToString and selectedItemBuilder cannot be used together'),
@@ -155,8 +163,10 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   final bool enabled;
   final T? initialItem;
   final List<T>? initialItems;
-  final String Function(T item)? groupBy;
+  final String? Function(T item)? groupBy;
+  final Widget Function(String? group)? groupByBuilder;
   final bool Function(T item, String? query)? filter;
+  final bool isCreatable;
 
   @override
   State<AutocompleteMaterial<T>> createState() => AutocompleteMaterialState();
