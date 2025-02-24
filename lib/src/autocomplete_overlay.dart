@@ -1,3 +1,4 @@
+import 'package:autocomplete_material/src/models/creatable_options.dart';
 import 'package:autocomplete_material/src/models/overlay_decoration.dart';
 import 'package:autocomplete_material/src/utils/constants.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   final String? Function(T item)? groupBy;
   final Widget Function(String? group)? groupByBuilder;
   final bool Function(T item, String? query)? filter;
-  final bool isCreatable;
+  final CreatableOptions? creatableOptions;
   final bool isMultiSelect;
   List<T> cachedItems = [];
 
@@ -42,7 +43,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
     required this.onSelected,
     required this.overlayDecoration,
     required this.isMultiSelect,
-    required this.isCreatable,
+    required this.creatableOptions,
     this.groupBy,
     this.groupByBuilder,
     this.filter,
@@ -121,10 +122,12 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                           .contains(query!);
                                     });
 
-                              final hasCreatable = isCreatable &&
-                                  !finalItems.any((item) =>
-                                      itemToString?.call(item) == query) &&
-                                  query != null;
+                              final hasCreatable =
+                                  (creatableOptions?.isCreatable.call(query!) ??
+                                          false) &&
+                                      !finalItems.any((item) =>
+                                          itemToString?.call(item) == query) &&
+                                      query != null;
 
                               if (filteredItems.isEmpty) {
                                 return overlayDecoration.emptyWidget;
@@ -137,12 +140,19 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                     padding: EdgeInsets.zero,
                                     children: [
                                       if (hasCreatable)
-                                        ListTile(
-                                          title: Text('Add "$query!"'),
-                                          onTap: () {
-                                            print(query);
-                                          },
-                                        ),
+                                        creatableOptions!.widgetBuilder
+                                                ?.call(query) ??
+                                            ListTile(
+                                              title: Text('Add "$query!"'),
+                                              onTap: () {
+                                                final item = creatableOptions
+                                                    .queryToObject(query!);
+                                                onSelected.call(item, false);
+                                                if (closeOnSelect) {
+                                                  textFieldFocusNode.unfocus();
+                                                }
+                                              },
+                                            ),
                                       ...filteredItems.map((item) {
                                         final isSelected = isItemSelected(item);
 
@@ -202,7 +212,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
     required this.onAsyncQuery,
     required this.overlayDecoration,
     required this.isMultiSelect,
-    required this.isCreatable,
+    required this.creatableOptions,
     this.groupBy,
     this.groupByBuilder,
     this.filter,
@@ -270,7 +280,9 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                             }
                             final items = snapshot.data as List;
 
-                            final hasCreatable = isCreatable &&
+                            final hasCreatable = (creatableOptions?.isCreatable
+                                        .call(text) ??
+                                    false) &&
                                 !items.any(
                                     (item) => itemToString?.call(item) == text);
 
@@ -315,12 +327,24 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               if (hasCreatable)
-                                                ListTile(
-                                                  title: Text('Add "$text"'),
-                                                  onTap: () {
-                                                    print(text);
-                                                  },
-                                                ),
+                                                creatableOptions!.widgetBuilder
+                                                        ?.call(text) ??
+                                                    ListTile(
+                                                      title:
+                                                          Text('Add "$text"'),
+                                                      onTap: () {
+                                                        final item =
+                                                            creatableOptions
+                                                                .queryToObject(
+                                                                    text);
+                                                        onSelected.call(
+                                                            item, false);
+                                                        if (closeOnSelect) {
+                                                          textFieldFocusNode
+                                                              .unfocus();
+                                                        }
+                                                      },
+                                                    ),
                                               if (groupByBuilder != null)
                                                 groupByBuilder.call(group),
                                               if (group != null &&

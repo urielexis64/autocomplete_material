@@ -1,5 +1,6 @@
 import 'package:autocomplete_material/src/autocomplete_material_controller.dart';
 import 'package:autocomplete_material/src/enums/autocomplete_type.dart';
+import 'package:autocomplete_material/src/models/creatable_options.dart';
 import 'package:autocomplete_material/src/models/overlay_decoration.dart';
 import 'package:autocomplete_material/src/utils/constants.dart';
 import 'package:autocomplete_material/src/widgets/autocomplete_form_field.dart';
@@ -35,7 +36,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.groupBy,
     this.groupByBuilder,
     this.filter,
-    this.isCreatable = false,
+    this.creatableOptions,
     super.key,
   })  : initialItems = null,
         multipleValidator = null,
@@ -65,7 +66,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.groupByBuilder,
     this.itemToString,
     this.filter,
-    this.isCreatable = false,
+    this.creatableOptions,
     super.key,
   })  : initialItem = null,
         multipleValidator = validator,
@@ -94,7 +95,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.groupBy,
     this.groupByBuilder,
     this.filter,
-    this.isCreatable = false,
+    this.creatableOptions,
     super.key,
   })  : initialItems = null,
         multipleValidator = null,
@@ -122,7 +123,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
     this.groupBy,
     this.groupByBuilder,
     this.itemToString,
-    this.isCreatable = false,
+    this.creatableOptions,
     super.key,
   })  : assert(selectedItemBuilder == null,
             'itemToString and selectedItemBuilder cannot be used together'),
@@ -166,7 +167,7 @@ class AutocompleteMaterial<T> extends StatefulWidget {
   final String? Function(T item)? groupBy;
   final Widget Function(String? group)? groupByBuilder;
   final bool Function(T item, String? query)? filter;
-  final bool isCreatable;
+  final CreatableOptions? creatableOptions;
 
   @override
   State<AutocompleteMaterial<T>> createState() => AutocompleteMaterialState();
