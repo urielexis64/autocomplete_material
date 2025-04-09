@@ -1,4 +1,4 @@
-library autocomplete_material;
+library;
 
 export 'src/autocomplete_material.dart';
 export 'src/models/creatable_options.dart';

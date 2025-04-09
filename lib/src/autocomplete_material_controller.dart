@@ -31,6 +31,36 @@ class AutocompleteMaterialController<T> {
       widget.decoration ?? const InputDecoration();
   bool get isActiveOverlay => _overlayEntry != null;
 
+  IconData get defaultSuffixIcon => widget.type == AutocompleteType.searchAsync
+      ? Icons.search
+      : Icons.keyboard_arrow_down_rounded;
+
+  Widget get suffixIcon => decoration.suffixIcon ?? Icon(defaultSuffixIcon);
+
+  Widget get clearButton => ValueListenableBuilder(
+        valueListenable: selectedItemNotifier,
+        builder: (context, value1, _) {
+          if (value1 == null && !widget.isMultiSelect) {
+            return const SizedBox.shrink();
+          }
+          return ValueListenableBuilder(
+            valueListenable: selectedItemsNotifier,
+            builder: (context, value2, child) {
+              if (value2.isEmpty && widget.isMultiSelect) {
+                return const SizedBox.shrink();
+              }
+
+              return child!;
+            },
+            child: IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.clear),
+              onPressed: clear,
+            ),
+          );
+        },
+      );
+
   void initItems() {
     if (widget.asyncItems == null) {
       items = Future.value(widget.items ?? []);
@@ -151,37 +181,9 @@ class AutocompleteMaterialController<T> {
   }
 
   InputDecoration getDecoration(FormFieldState state) {
-    Widget clearButton = ValueListenableBuilder(
-      valueListenable: selectedItemNotifier,
-      builder: (context, value1, _) {
-        if (value1 == null && !widget.isMultiSelect) {
-          return const SizedBox.shrink();
-        }
-        return ValueListenableBuilder(
-          valueListenable: selectedItemsNotifier,
-          builder: (context, value2, child) {
-            if (value2.isEmpty && widget.isMultiSelect) {
-              return const SizedBox.shrink();
-            }
+    final inputDecorationTheme = Theme.of(state.context).inputDecorationTheme;
 
-            return child!;
-          },
-          child: IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.clear),
-            onPressed: clear,
-          ),
-        );
-      },
-    );
-
-    final defaultSuffixIcon = widget.type == AutocompleteType.searchAsync
-        ? Icons.search
-        : Icons.keyboard_arrow_down_rounded;
-
-    return decoration
-        .applyDefaults(Theme.of(state.context).inputDecorationTheme)
-        .copyWith(
+    return decoration.applyDefaults(inputDecorationTheme).copyWith(
           suffixIcon: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.end,
@@ -190,7 +192,7 @@ class AutocompleteMaterialController<T> {
               IconButton(
                 onPressed: onTap,
                 visualDensity: VisualDensity.compact,
-                icon: decoration.suffixIcon ?? Icon(defaultSuffixIcon),
+                icon: suffixIcon,
               )
             ],
           ),
@@ -199,23 +201,21 @@ class AutocompleteMaterialController<T> {
         );
   }
 
-  OverlayEntry _createBackdropOverlay() {
-    return OverlayEntry(
-      builder: (context) => Positioned(
-        left: 0,
-        top: 0,
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child: GestureDetector(onTap: removeOverlay),
-      ),
-    );
-  }
+  OverlayEntry _createBackdropOverlay() => OverlayEntry(
+        builder: (context) => Positioned(
+          left: 0,
+          top: 0,
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: GestureDetector(onTap: removeOverlay),
+        ),
+      );
 
   OverlayEntry _getOverlayEntry() {
     final overlayDecoration =
         widget.overlayDecoration ?? const OverlayDecoration();
     return switch (widget.type) {
-      AutocompleteType.searchSync => AutocompleteOverlay(
+      AutocompleteType.searchSync => AutocompleteOverlay.sync(
           renderBox: context.findRenderObject() as RenderBox,
           layerLink: layerLink,
           items: items,
