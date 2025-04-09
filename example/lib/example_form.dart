@@ -15,19 +15,33 @@ class ExampleForm extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            const AutocompleteMaterial.single(
-              items: ['a', 'b', 'c', 'd', 'e'],
+            AutocompleteMaterial.single(
+              items: const ['a', 'b', 'c', 'd', 'e'],
+              onChanged: (String? value) {
+                debugPrint(value);
+              },
             ),
-            const AutocompleteMaterial.multiple(
-              items: [1, 2, 3, 4, 5],
+            AutocompleteMaterial.multiple(
+              items: const [1, 2, 3, 4, 5],
+              onItemsChanged: (value) {
+                debugPrint(value.join(', '));
+              },
             ),
             AutocompleteMaterial.searchAsync(
-              onAsyncQuery: (query) async => [1, 2, 3, 4, 5],
+              onAsyncQuery: (query) => Future.delayed(
+                const Duration(seconds: 1),
+                () => [1, 2, 3, 4, 5],
+              ),
+              onChanged: (int? value) => debugPrint('$value'),
             ),
             AutocompleteMaterial.multipleSearchAsync(
-              onAsyncQuery: (query) async => [1, 2, 3, 4, 5],
-              decoration: const AutocompleteDecoration(
-                  hintText: 'Single', border: OutlineInputBorder()),
+              onAsyncQuery: (String? query) => Future.delayed(
+                const Duration(seconds: 1),
+                () => [1, 2, 3, 4, 5],
+              ),
+              onItemsChanged: (value) {
+                debugPrint(value.join(', '));
+              },
             ),
           ],
         ),
