@@ -1,3 +1,4 @@
+import 'package:autocomplete_material/src/utils/sizes.dart';
 import 'package:flutter/material.dart';
 
 /// A default item tile widget for displaying items in a list.
@@ -23,9 +24,11 @@ class DefaultItemTile<T> extends StatelessWidget {
       key: ValueKey(item),
       title: Text(title),
       selected: isSelected,
+      /// Make this customizable.
       selectedColor: Theme.of(context).colorScheme.onSurface,
+      /// Make this customizable.
       selectedTileColor: Colors.grey[300],
-      contentPadding: const EdgeInsets.only(right: 8, left: 32),
+      contentPadding: const EdgeInsets.only(right: Sizes.p8, left: Sizes.p32),
       onTap: onTap,
     );
   }

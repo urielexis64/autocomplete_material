@@ -73,15 +73,15 @@ class SyncListBuilder<T> extends StatelessWidget {
           valueListenable: textFieldNotifier!,
           builder: (context, query, child) {
             final filteredItems = filter != null
-                ? finalItems
 
                 /// TODO: Move this into a separate function / Util
-                : finalItems.where((element) {
+                ? finalItems.where((element) {
                     final stringItem =
                         itemToString?.call(element) ?? element.toString();
                     query = (query ?? '').toLowerCase();
                     return stringItem.toLowerCase().contains(query!);
-                  });
+                  })
+                : finalItems;
 
             /// TODO: Move this into a separate function / Util
             final hasCreatable = (creatableOptions?.isCreatable.call(query!) ??

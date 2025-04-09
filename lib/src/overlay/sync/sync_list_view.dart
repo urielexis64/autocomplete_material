@@ -1,6 +1,7 @@
 import 'package:autocomplete_material/autocomplete_material.dart';
-import 'package:autocomplete_material/src/overlay/default_item_tile.dart';
+import 'package:autocomplete_material/src/widgets/default_item_tile.dart';
 import 'package:autocomplete_material/src/overlay/utils/item_selector.dart';
+import 'package:autocomplete_material/src/utils/sizes.dart';
 import 'package:flutter/material.dart';
 
 /// A widget that displays a list of items for selection.
@@ -71,7 +72,7 @@ class SyncListView<T> extends StatelessWidget {
 
     return ListView(
       shrinkWrap: true,
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.only(top: Sizes.p8),
       children: [
         if (hasCreatable)
           GestureDetector(

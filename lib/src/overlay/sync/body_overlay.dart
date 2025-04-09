@@ -68,6 +68,7 @@ class BodyOverlay extends StatelessWidget {
             elevation: overlayDecoration.elevation,
             borderRadius: overlayDecoration.borderRadius,
             color: overlayDecoration.backgroundColor,
+            child: child,
           ),
         ),
       ),

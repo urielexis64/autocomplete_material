@@ -1,6 +1,6 @@
 import 'package:autocomplete_material/src/models/creatable_options.dart';
 import 'package:autocomplete_material/src/models/overlay_decoration.dart';
-import 'package:autocomplete_material/src/overlay/default_item_tile.dart';
+import 'package:autocomplete_material/src/widgets/default_item_tile.dart';
 import 'package:autocomplete_material/src/overlay/sync/body_overlay.dart';
 import 'package:autocomplete_material/src/overlay/sync/sync_list_builder.dart';
 import 'package:autocomplete_material/src/utils/constants.dart';
@@ -359,18 +359,12 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                             );
                                           }
 
-                                          return ListTile(
+                                          return DefaultItemTile(
                                             key: ValueKey(item),
-                                            title: Text(
-                                              itemToString?.call(item) ??
-                                                  item.toString(),
-                                            ),
-                                            selected: isSelected,
-                                            selectedColor: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface,
-                                            selectedTileColor: Colors.grey[300],
-                                            onTap: onTap,
+                                            item: item,
+                                            itemToString: itemToString,
+                                            isSelected: isSelected,
+                                            onTap: () => onTap,
                                           );
                                         },
                                         separatorBuilder: (_, __) =>
