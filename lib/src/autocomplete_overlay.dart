@@ -1,8 +1,16 @@
 import 'package:autocomplete_material/src/models/creatable_options.dart';
 import 'package:autocomplete_material/src/models/overlay_decoration.dart';
+import 'package:autocomplete_material/src/widgets/default_item_tile.dart';
+import 'package:autocomplete_material/src/overlay/sync/body_overlay.dart';
+import 'package:autocomplete_material/src/overlay/sync/sync_list_builder.dart';
 import 'package:autocomplete_material/src/utils/constants.dart';
 import 'package:flutter/material.dart';
 
+/// This class is used to create an overlay for the autocomplete widget.
+///
+/// It handles the display of items, selection, and interaction with the text field.
+/// It can be used for both synchronous and asynchronous item fetching.
+/// It also supports multi-select and creatable options.
 class AutocompleteOverlay<T> extends OverlayEntry {
   final LayerLink layerLink;
   final RenderBox renderBox;
@@ -31,7 +39,7 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   final bool isMultiSelect;
   List<T> cachedItems = [];
 
-  AutocompleteOverlay({
+  AutocompleteOverlay.sync({
     required this.layerLink,
     required this.renderBox,
     required this.items,
@@ -52,152 +60,29 @@ class AutocompleteOverlay<T> extends OverlayEntry {
   })  : onAsyncQuery = null,
         super(
           builder: (context) {
-            bool isItemSelected(T item) {
-              if (isMultiSelect) {
-                final selectedItems = selectedItemsNotifier.value;
-                return selectedItems.contains(item);
-              }
-
-              final itemAsString = itemToString?.call(item) ?? item.toString();
-              final text = textController.text;
-
-              return itemAsString == text;
-            }
-
-            final size = renderBox.size;
+            final height = MediaQuery.of(context).size.height;
             final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-            final hasSpaceBelow = renderBox.localToGlobal(Offset.zero).dy +
-                    size.height +
-                    Constants.defaultOverlayMaxHeight +
-                    keyboardHeight <
-                MediaQuery.of(context).size.height;
-            return Positioned(
-              width: size.width,
-              child: CompositedTransformFollower(
-                link: layerLink,
-                showWhenUnlinked: false,
-                targetAnchor: hasSpaceBelow
-                    ? Alignment.bottomCenter
-                    : Alignment.topCenter,
-                followerAnchor: hasSpaceBelow
-                    ? Alignment.topCenter
-                    : Alignment.bottomCenter,
-                offset: Offset(0, hasSpaceBelow ? 0 : -10),
-                child: ConstrainedBox(
-                  constraints: overlayDecoration.constraints ??
-                      const BoxConstraints(
-                        maxHeight: Constants.defaultOverlayMaxHeight,
-                      ),
-                  child: Material(
-                    elevation: overlayDecoration.elevation,
-                    borderRadius: overlayDecoration.borderRadius,
-                    color: overlayDecoration.backgroundColor,
-                    child: FutureBuilder(
-                        future: items,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return overlayDecoration.loadingWidget;
-                          }
 
-                          if (snapshot.hasError) {
-                            return overlayDecoration.errorWidget;
-                          }
-
-                          final finalItems = snapshot.data as List<T>;
-
-                          return ValueListenableBuilder<String?>(
-                            valueListenable: textFieldNotifier!,
-                            builder: (context, query, child) {
-                              final filteredItems = filter != null
-                                  ? finalItems
-                                      .where((item) => filter.call(item, query))
-                                  : finalItems.where((element) {
-                                      final stringItem =
-                                          itemToString?.call(element) ??
-                                              element.toString();
-                                      query = (query ?? '').toLowerCase();
-                                      return stringItem
-                                          .toLowerCase()
-                                          .contains(query!);
-                                    });
-
-                              final hasCreatable =
-                                  (creatableOptions?.isCreatable.call(query!) ??
-                                          false) &&
-                                      !finalItems.any((item) =>
-                                          itemToString?.call(item) == query) &&
-                                      query != null;
-
-                              if (filteredItems.isEmpty && !hasCreatable) {
-                                return overlayDecoration.emptyWidget;
-                              }
-
-                              return ValueListenableBuilder(
-                                valueListenable: selectedItemsNotifier,
-                                builder: (context, selectedItems, child) {
-                                  return ListView(
-                                    shrinkWrap: true,
-                                    padding: EdgeInsets.zero,
-                                    children: [
-                                      if (hasCreatable)
-                                        GestureDetector(
-                                          onTap: () {
-                                            final item = creatableOptions
-                                                .queryToObject(query!);
-                                            onSelected.call(item, false);
-                                            if (closeOnSelect) {
-                                              textFieldFocusNode.unfocus();
-                                            }
-                                          },
-                                          child: creatableOptions!.widgetBuilder
-                                                  ?.call(query) ??
-                                              ListTile(
-                                                title: Text('Add "$query"'),
-                                              ),
-                                        ),
-                                      ...filteredItems.map((item) {
-                                        final isSelected = isItemSelected(item);
-
-                                        void onTap() {
-                                          onSelected.call(item, isSelected);
-                                          if (closeOnSelect) {
-                                            textFieldFocusNode.unfocus();
-                                          }
-                                        }
-
-                                        if (itemBuilder != null) {
-                                          return itemBuilder(
-                                            context,
-                                            item,
-                                            onTap,
-                                            isSelected,
-                                          );
-                                        }
-
-                                        return ListTile(
-                                          key: ValueKey(item),
-                                          title: Text(
-                                            itemToString?.call(item) ??
-                                                item.toString(),
-                                          ),
-                                          selected: isSelected,
-                                          selectedColor: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          selectedTileColor: Colors.grey[300],
-                                          onTap: onTap,
-                                        );
-                                      }).toList(),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                          );
-                        }),
-                  ),
-                ),
+            return BodyOverlay(
+              overlayDecoration: overlayDecoration,
+              keyboardHeight: keyboardHeight,
+              height: height,
+              layerLink: layerLink,
+              renderBox: renderBox,
+              child: SyncListBuilder(
+                items: items,
+                overlayDecoration: overlayDecoration,
+                textController: textController,
+                closeOnSelect: closeOnSelect,
+                isMultiSelect: isMultiSelect,
+                onSelected: onSelected,
+                selectedItemsNotifier: selectedItemsNotifier,
+                textFieldFocusNode: textFieldFocusNode,
+                itemToString: itemToString,
+                filter: filter,
+                creatableOptions: creatableOptions,
+                itemBuilder: itemBuilder,
+                textFieldNotifier: textFieldNotifier,
               ),
             );
           },
@@ -400,23 +285,11 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                                     );
                                                   }
 
-                                                  return ListTile(
+                                                  return DefaultItemTile(
                                                     key: ValueKey(item),
-                                                    title: Text(itemToString
-                                                            ?.call(item) ??
-                                                        item.toString()),
-                                                    selected: isSelected,
-                                                    selectedColor:
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .onSurface,
-                                                    selectedTileColor:
-                                                        Colors.grey[300],
-                                                    contentPadding:
-                                                        const EdgeInsets.only(
-                                                      right: 8,
-                                                      left: 32,
-                                                    ),
+                                                    item: item,
+                                                    itemToString: itemToString,
+                                                    isSelected: isSelected,
                                                     onTap: onTap,
                                                   );
                                                 },
@@ -486,18 +359,12 @@ class AutocompleteOverlay<T> extends OverlayEntry {
                                             );
                                           }
 
-                                          return ListTile(
+                                          return DefaultItemTile(
                                             key: ValueKey(item),
-                                            title: Text(
-                                              itemToString?.call(item) ??
-                                                  item.toString(),
-                                            ),
-                                            selected: isSelected,
-                                            selectedColor: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface,
-                                            selectedTileColor: Colors.grey[300],
-                                            onTap: onTap,
+                                            item: item,
+                                            itemToString: itemToString,
+                                            isSelected: isSelected,
+                                            onTap: () => onTap,
                                           );
                                         },
                                         separatorBuilder: (_, __) =>
