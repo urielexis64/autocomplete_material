@@ -1,4 +1,5 @@
 import 'package:autocomplete_material/autocomplete_material.dart';
+import 'package:autocomplete_material_example/widgets/single_select/single_select_page.dart';
 import 'package:flutter/material.dart';
 
 class ExampleForm extends StatelessWidget {
@@ -15,33 +16,31 @@ class ExampleForm extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            AutocompleteMaterial.single(
-              items: const ['a', 'b', 'c', 'd', 'e'],
-              onChanged: (String? value) {
-                debugPrint(value);
-              },
+            Semantics(
+              label: 'SingleSelectButton',
+              child: TextButton(
+                child: Text('Single Select'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SingleSelectPage(),
+                    ),
+                  );
+                },
+              ),
             ),
             AutocompleteMaterial.multiple(
               items: const [1, 2, 3, 4, 5],
-              onItemsChanged: (value) {
-                debugPrint(value.join(', '));
-              },
+              onItemsChanged: (selectedItems) {},
             ),
             AutocompleteMaterial.searchAsync(
-              onAsyncQuery: (query) => Future.delayed(
-                const Duration(seconds: 1),
-                () => [1, 2, 3, 4, 5],
-              ),
-              onChanged: (int? value) => debugPrint('$value'),
+              onAsyncQuery: (query) async => [1, 2, 3, 4, 5],
+              onChanged: (int? value) {},
             ),
             AutocompleteMaterial.multipleSearchAsync(
-              onAsyncQuery: (String? query) => Future.delayed(
-                const Duration(seconds: 1),
-                () => [1, 2, 3, 4, 5],
-              ),
-              onItemsChanged: (value) {
-                debugPrint(value.join(', '));
-              },
+              onAsyncQuery: (query) async => [1, 2, 3, 4, 5],
+              onItemsChanged: (List<int> value) {},
             ),
           ],
         ),
